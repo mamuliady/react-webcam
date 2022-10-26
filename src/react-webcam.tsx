@@ -60,6 +60,7 @@ export type WebcamProps = Omit<React.HTMLProps<HTMLVideoElement>, "ref"> & {
   mirrored: boolean;
   minScreenshotHeight?: number;
   minScreenshotWidth?: number;
+  rotate?: number;
   onUserMedia: (stream: MediaStream) => void;
   onUserMediaError: (error: string | DOMException) => void;
   screenshotFormat: "image/webp" | "image/png" | "image/jpeg";
@@ -83,6 +84,7 @@ export default class Webcam extends React.Component<WebcamProps, WebcamState> {
     onUserMediaError: () => undefined,
     screenshotFormat: "image/webp",
     screenshotQuality: 0.92,
+    rotate: 0
   };
 
   private canvas: HTMLCanvasElement | null = null;
@@ -245,7 +247,16 @@ export default class Webcam extends React.Component<WebcamProps, WebcamState> {
       }
 
       ctx.imageSmoothingEnabled = props.imageSmoothing;
-      ctx.drawImage(this.video, 0, 0, screenshotDimensions?.width || canvas.width, screenshotDimensions?.height || canvas.height);
+
+      if (props.rotate) {
+        ctx.save();
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+        ctx.rotate(props.rotate * (Math.PI / 180));
+        ctx.drawImage(this.video, -canvas.width / 2, -canvas.height / 2, canvas.width, canvas.height);
+        ctx.restore();
+      } else {
+        ctx.drawImage(this.video, 0, 0, screenshotDimensions?.width || canvas.width, screenshotDimensions?.height || canvas.height);
+      }
 
       // invert mirroring
       if (props.mirrored) {
@@ -392,7 +403,15 @@ export default class Webcam extends React.Component<WebcamProps, WebcamState> {
       ...rest
     } = props;
 
-    const videoStyle = mirrored ? { ...style, transform: `${style.transform || ""} scaleX(-1)` } : style;
+    let videoStyle = mirrored ? { ...style, transform: `${style.transform || ""} scaleX(-1)` } : style;
+
+    if(props.rotate) {
+      if (videoStyle.transform) {
+        videoStyle.transform += ' '
+      } else {
+        videoStyle.transform = `rotate(${props.rotate}deg)`
+      }
+    }
 
     const childrenProps: ChildrenProps = {
       getScreenshot: this.getScreenshot.bind(this),
