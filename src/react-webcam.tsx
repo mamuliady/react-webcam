@@ -232,8 +232,14 @@ export default class Webcam extends React.Component<WebcamProps, WebcamState> {
       }
 
       this.canvas = document.createElement("canvas");
-      this.canvas.width = screenshotDimensions?.width ||  canvasWidth;
-      this.canvas.height = screenshotDimensions?.height || canvasHeight;
+      if (props.rotate == 90 || props.rotate == 270) {
+        this.canvas.width = screenshotDimensions?.height || canvasHeight;
+        this.canvas.height = screenshotDimensions?.width || canvasWidth;
+      } else {
+        this.canvas.width = screenshotDimensions?.width || canvasWidth;
+        this.canvas.height = screenshotDimensions?.height || canvasHeight;
+      }
+
       this.ctx = this.canvas.getContext("2d");
     }
 
@@ -252,7 +258,14 @@ export default class Webcam extends React.Component<WebcamProps, WebcamState> {
         ctx.save();
         ctx.translate(canvas.width / 2, canvas.height / 2);
         ctx.rotate(props.rotate * (Math.PI / 180));
-        ctx.drawImage(this.video, -canvas.width / 2, -canvas.height / 2, canvas.width, canvas.height);
+        if (props.rotate == 90 || props.rotate == 270) {
+          ctx.drawImage(this.video, -canvas.height / 2, -canvas.width / 2, canvas.height, canvas.width);
+        } else {
+          ctx.drawImage(this.video, -canvas.width / 2, -canvas.height / 2, canvas.width, canvas.height);
+        }
+
+        ctx.rotate(-1 *props.rotate * (Math.PI / 180));
+
         ctx.restore();
       } else {
         ctx.drawImage(this.video, 0, 0, screenshotDimensions?.width || canvas.width, screenshotDimensions?.height || canvas.height);
@@ -405,12 +418,23 @@ export default class Webcam extends React.Component<WebcamProps, WebcamState> {
 
     let videoStyle = mirrored ? { ...style, transform: `${style.transform || ""} scaleX(-1)` } : style;
 
-    if(props.rotate) {
-      if (videoStyle.transform) {
-        videoStyle.transform += ' '
-      } else {
-        videoStyle.transform = `rotate(${props.rotate}deg)`
+    if (props.rotate) {
+      let newStyle = { ...videoStyle }
+      if (newStyle.transform) {
+        newStyle.transform = 'rotate(" + props.rotate + "deg)' + " scaleX(-1)";
       }
+      else {
+        newStyle.transform = "rotate(" + props.rotate + "deg)";
+      }
+
+      let tempWidth = newStyle.width;
+
+      if (props.rotate == 90 || props.rotate == 270) {
+        newStyle.width = newStyle.height;
+        newStyle.height = tempWidth;
+      }
+
+      videoStyle = newStyle
     }
 
     const childrenProps: ChildrenProps = {
