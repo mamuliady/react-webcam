@@ -257,14 +257,14 @@ export default class Webcam extends React.Component<WebcamProps, WebcamState> {
       if (props.rotate) {
         ctx.save();
         ctx.translate(canvas.width / 2, canvas.height / 2);
-        ctx.rotate(props.rotate * (Math.PI / 180));
+        ctx.rotate((props.mirrored? -1 : 1) * props.rotate * (Math.PI / 180));
         if (props.rotate == 90 || props.rotate == 270) {
           ctx.drawImage(this.video, -canvas.height / 2, -canvas.width / 2, canvas.height, canvas.width);
         } else {
           ctx.drawImage(this.video, -canvas.width / 2, -canvas.height / 2, canvas.width, canvas.height);
         }
 
-        ctx.rotate(-1 *props.rotate * (Math.PI / 180));
+        ctx.rotate((props.mirrored? 1 : -1)  * props.rotate * (Math.PI / 180));
 
         ctx.restore();
       } else {
