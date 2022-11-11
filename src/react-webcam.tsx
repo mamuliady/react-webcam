@@ -421,7 +421,7 @@ export default class Webcam extends React.Component<WebcamProps, WebcamState> {
     if (props.rotate) {
       let newStyle = { ...videoStyle }
       if (newStyle.transform) {
-        newStyle.transform = 'rotate(" + props.rotate + "deg)' + " scaleX(-1)";
+        newStyle.transform = "rotate(" + props.rotate + "deg)" + " scaleX(-1)";
       }
       else {
         newStyle.transform = "rotate(" + props.rotate + "deg)";
